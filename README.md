@@ -1,20 +1,32 @@
-# Rule-Based AI Chatbot
 
-## Description
-This is a simple rule-based AI chatbot created using Python.
+# 🤖 Smart Meta AI Chatbot
+
+A Python-based Meta AI style chatbot built using Tkinter.
 
 ## Features
-- Greeting responses
-- Exit commands
-- Continuous chat loop
-- if-else logic
-- User interaction
+
+* Smart AI Chat Interface
+* Dark Meta AI Style UI
+* Math Calculations
+* Date & Time
+* Motivational Replies
+* Jokes
+* Chat Memory
+* Scrollable Chat
+* Clear Chat Feature
 
 ## Technologies Used
-- Python
 
-## How to Run
+* Python
+* Tkinter
+* Threading
+
+## Run Project
 
 ```bash
-python chatbot.py
+py chatbot.py
 ```
+
+## Author
+
+Vanshika Kaushik
