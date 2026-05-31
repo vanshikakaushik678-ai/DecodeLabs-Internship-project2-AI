@@ -1,0 +1,5 @@
+
+[07:00 PM]
+You: hello
+AI: Hi! How can I help you today?
+--------------------

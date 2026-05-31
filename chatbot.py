@@ -160,6 +160,29 @@ def process_message(user_input):
     # AI reply
     ai_reply = get_ai_response(user_input)
 
+    # Save chat history
+    with open(
+        "chat_history.txt",
+        "a",
+        encoding="utf-8"
+    ) as file:
+
+        file.write(
+            f"\n[{current_time}]\n"
+        )
+
+        file.write(
+            f"You: {user_input}\n"
+        )
+
+        file.write(
+            f"AI: {ai_reply}\n"
+        )
+
+        file.write(
+            "--------------------\n"
+        )
+
     # Remove typing text
     chat_area.delete("end-2l", "end-1l")
 
