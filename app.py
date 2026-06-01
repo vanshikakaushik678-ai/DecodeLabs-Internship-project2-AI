@@ -1,417 +1,205 @@
 import streamlit as st
 import pandas as pd
+import joblib
+import os
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
 
-from sklearn.metrics import (
-    accuracy_score,
-    confusion_matrix
-)
-
-from sklearn.ensemble import (
-    RandomForestClassifier
-)
-
-from sklearn.tree import (
-    DecisionTreeClassifier
-)
-
-from sklearn.svm import (
-    SVC
-)
-
-# -------------------------
-# PAGE CONFIG
-# -------------------------
-
+# Page Configuration
 st.set_page_config(
     page_title="Advanced AI Classification Dashboard",
     layout="wide"
 )
 
-st.title(
-    "🧠 Advanced AI Classification Dashboard"
-)
+st.title("🧠 Advanced AI Classification Dashboard")
 
 st.markdown("""
 ### Objective
-Predict target classes using supervised learning algorithms and compare model performance.
+Upload a CSV dataset, select a target column, train multiple classification models, and compare their performance.
 """)
 
-# -------------------------
-# FILE UPLOAD
-# -------------------------
-
-uploaded = st.file_uploader(
-    "Upload CSV Dataset",
+# File Upload
+uploaded_file = st.file_uploader(
+    "📂 Upload CSV Dataset",
     type=["csv"]
 )
 
-# -------------------------
-# MAIN
-# -------------------------
+# Main App
+if uploaded_file is not None:
 
-if uploaded:
+    try:
+        # Read Dataset
+        df = pd.read_csv(uploaded_file)
 
-    df = pd.read_csv(uploaded)
+        st.subheader("📊 Dataset Preview")
+        st.dataframe(df.head())
 
-    st.subheader(
-        "Dataset Preview"
-    )
+        st.subheader("📈 Dataset Information")
 
-    st.dataframe(
-        df.head()
-    )
+        col1, col2 = st.columns(2)
 
-    st.subheader(
-        "Dataset Statistics"
-    )
+        with col1:
+            st.metric("Rows", df.shape[0])
 
-    st.write(
-        df.describe()
-    )
+        with col2:
+            st.metric("Columns", df.shape[1])
 
-    st.subheader(
-        "Dataset Shape"
-    )
+        st.subheader("Statistics")
+        st.write(df.describe(include="all"))
 
-    st.write(
-        f"Rows: {df.shape[0]}"
-    )
-
-    st.write(
-        f"Columns: {df.shape[1]}"
-    )
-
-    # -------------------------
-    # TARGET COLUMN
-    # -------------------------
-
-    target = st.selectbox(
-        "Select Target Column",
-        df.columns
-    )
-
-    st.write(
-        f"Selected Target: {target}"
-    )
-
-    X = df.drop(
-        columns=[target]
-    )
-
-    y = df[target]
-
-    # -------------------------
-    # ENCODING
-    # -------------------------
-
-    for col in X.columns:
-
-        if X[col].dtype == "object":
-
-            encoder = LabelEncoder()
-
-            X[col] = (
-                encoder.fit_transform(
-                    X[col]
-                    .astype(str)
-                )
-            )
-
-    if y.dtype == "object":
-
-        y = (
-            LabelEncoder()
-            .fit_transform(
-                y.astype(str)
-            )
+        # Target Column Selection
+        target = st.selectbox(
+            "🎯 Select Target Column",
+            df.columns
         )
 
-    # -------------------------
-    # TRAIN TEST SPLIT
-    # -------------------------
+        X = df.drop(columns=[target])
+        y = df[target]
 
-    X_train, X_test, y_train, y_test = (
+        # Encode categorical features
+        for col in X.columns:
+            if X[col].dtype == "object":
+                encoder = LabelEncoder()
+                X[col] = encoder.fit_transform(X[col].astype(str))
 
-        train_test_split(
+        # Encode target column
+        if y.dtype == "object":
+            y = LabelEncoder().fit_transform(y.astype(str))
 
+        # Train-Test Split
+        X_train, X_test, y_train, y_test = train_test_split(
             X,
-
             y,
-
             test_size=0.2,
-
             random_state=42
-
         )
 
-    )
+        st.subheader("🔀 Train/Test Split")
+        st.write(f"Training Samples: {len(X_train)}")
+        st.write(f"Testing Samples: {len(X_test)}")
 
-    st.subheader(
-        "Train Test Split"
-    )
+        # Models
+        models = {
+            "Random Forest": RandomForestClassifier(
+                n_estimators=300,
+                random_state=42
+            ),
+            "Decision Tree": DecisionTreeClassifier(),
+            "SVM": SVC()
+        }
 
-    st.write(
-        f"Train Rows: {len(X_train)}"
-    )
+        scores = []
+        best_accuracy = 0
+        best_model_name = ""
+        best_model = None
+        best_prediction = None
 
-    st.write(
-        f"Test Rows: {len(X_test)}"
-    )
+        # Train Models
+        for name, model in models.items():
 
-    # -------------------------
-    # MODELS
-    # -------------------------
+            model.fit(X_train, y_train)
 
-    models = {
+            predictions = model.predict(X_test)
 
-        "Random Forest":
-
-        RandomForestClassifier(
-            n_estimators=300,
-            random_state=42
-        ),
-
-        "Decision Tree":
-
-        DecisionTreeClassifier(),
-
-        "SVM":
-
-        SVC()
-
-    }
-
-    scores = []
-
-    best_accuracy = 0
-
-    best_model_name = ""
-
-    best_prediction = None
-
-    best_model = None
-
-    # -------------------------
-    # TRAINING
-    # -------------------------
-
-    for name, model in models.items():
-
-        model.fit(
-            X_train,
-            y_train
-        )
-
-        pred = (
-            model.predict(
-                X_test
-            )
-        )
-
-        acc = (
-            accuracy_score(
+            accuracy = accuracy_score(
                 y_test,
-                pred
+                predictions
             )
+
+            scores.append([name, accuracy])
+
+            if accuracy > best_accuracy:
+                best_accuracy = accuracy
+                best_model_name = name
+                best_model = model
+                best_prediction = predictions
+
+        # Save Best Model
+        os.makedirs("models", exist_ok=True)
+
+        joblib.dump(
+            best_model,
+            "models/best_model.pkl"
         )
 
-        scores.append(
-            [
-                name,
-                acc
-            ]
-        )
-
-        if acc > best_accuracy:
-
-            best_accuracy = acc
-
-            best_model_name = name
-
-            best_prediction = pred
-
-            best_model = model
-
-    result = (
-
-        pd.DataFrame(
-
+        # Results Table
+        result_df = pd.DataFrame(
             scores,
-
-            columns=[
-
-                "Model",
-
-                "Accuracy"
-
-            ]
-
+            columns=["Model", "Accuracy"]
         )
 
-    )
+        st.subheader("🏆 Model Leaderboard")
+        st.dataframe(result_df)
 
-    # -------------------------
-    # LEADERBOARD
-    # -------------------------
-
-    st.subheader(
-        "🏆 Model Leaderboard"
-    )
-
-    st.dataframe(
-        result
-    )
-
-    st.metric(
-        "Best Accuracy",
-        f"{best_accuracy:.2%}"
-    )
-
-    st.success(
-        f"Best Model → {best_model_name}"
-    )
-
-    # -------------------------
-    # CONFUSION MATRIX
-    # -------------------------
-
-    st.subheader(
-        "Confusion Matrix"
-    )
-
-    cm = (
-
-        confusion_matrix(
-
-            y_test,
-
-            best_prediction
-
+        st.metric(
+            "Best Accuracy",
+            f"{best_accuracy:.2%}"
         )
 
-    )
+        st.success(
+            f"Best Model: {best_model_name}"
+        )
 
-    st.write(
-        cm
-    )
+        # Confusion Matrix
+        st.subheader("📉 Confusion Matrix")
 
-    # -------------------------
-    # PREDICTIONS
-    # -------------------------
-
-    st.subheader(
-        "Prediction Sample"
-    )
-
-    prediction_df = (
-
-        pd.DataFrame({
-
-            "Actual":
-
+        cm = confusion_matrix(
             y_test,
-
-            "Predicted":
-
             best_prediction
+        )
 
+        st.write(cm)
+
+        # Prediction Sample
+        st.subheader("🔍 Prediction Sample")
+
+        prediction_df = pd.DataFrame({
+            "Actual": y_test,
+            "Predicted": best_prediction
         })
 
-    )
+        st.dataframe(prediction_df.head(20))
 
-    st.dataframe(
+        # Feature Importance
+        if best_model_name == "Random Forest":
 
-        prediction_df
+            st.subheader("⭐ Top Feature Importance")
 
-        .head(20)
-
-    )
-
-    # -------------------------
-    # FEATURE IMPORTANCE
-    # -------------------------
-
-    if best_model_name == "Random Forest":
-
-        st.subheader(
-            "Top Feature Importance"
-        )
-
-        importance = (
-
-            pd.DataFrame({
-
-                "Feature":
-                X.columns,
-
-                "Importance":
-
-                best_model
-                .feature_importances_
-
+            importance_df = pd.DataFrame({
+                "Feature": X.columns,
+                "Importance": best_model.feature_importances_
             })
 
-        )
-
-        importance = (
-
-            importance
-
-            .sort_values(
-
+            importance_df = importance_df.sort_values(
                 by="Importance",
-
                 ascending=False
-
             )
 
-        )
-
-        st.bar_chart(
-
-            importance
-
-            .head(10)
-
-            .set_index(
-                "Feature"
+            st.bar_chart(
+                importance_df.head(10).set_index("Feature")
             )
 
+        # Download Results
+        csv_data = result_df.to_csv(index=False)
+
+        st.download_button(
+            "⬇ Download Results",
+            csv_data,
+            file_name="model_results.csv",
+            mime="text/csv"
         )
 
-    # -------------------------
-    # DOWNLOAD
-    # -------------------------
+        st.balloons()
 
-    csv = (
+        st.success("✅ Project Completed Successfully")
 
-        result
+    except Exception as e:
+        st.error(f"Error: {e}")
 
-        .to_csv(
-
-            index=False
-
-        )
-
-    )
-
-    st.download_button(
-
-        "⬇ Download Results",
-
-        csv,
-
-        "model_results.csv",
-
-        "text/csv"
-
-    )
-
-    st.balloons()
-
-    st.success(
-        "Project Completed Successfully"
-    )
+else:
+    st.info("Please upload a CSV dataset to begin.")
