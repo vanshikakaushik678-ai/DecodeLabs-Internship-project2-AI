@@ -100,6 +100,27 @@ http://127.0.0.1:5000
 3. Train or load classification model.
 4. Generate predictions.
 5. Visualize results on dashboard.
+---
+## 📸 Screenshots
+
+### Home Page
+![Home](screenshots/home.png)
+
+### Dataset Information
+![Dataset Information](screenshots/dataset information.png)
+
+### Prediction
+![Prediction](screenshots/prediction.png)
+
+### Graph
+![Graph](screenshots/graph.png)
+
+### Leaderboard
+![Leaderboard](screenshots/leaderboard.png)
+
+### Upload CSV
+![Upload CSV](screenshots/uploading csv.png)
+---
 
 ## 🎯 Internship Project
 
