@@ -29,20 +29,10 @@ This project is developed as part of the Decode Labs Internship Program. The app
 * Pandas
 * NumPy
 
-### Frontend
-
-* HTML
-* CSS
-* JavaScript
-* Bootstrap
 
 ## 📂 Project Structure
 
 AI_Classification_Pro/
-
-├── static/
-
-├── templates/
 
 ├── models/
 
