@@ -118,8 +118,8 @@ http://127.0.0.1:5000
 ### Leaderboard
 ![Leaderboard](screenshots/leaderboard.png)
 
-### Upload CSV
-![Upload CSV](screenshots/uploading.png)
+### Uploading CSV
+![Uploading CSV](screenshots/uploading.png)
 ---
 
 ## 🎯 Internship Project
