@@ -119,7 +119,7 @@ http://127.0.0.1:5000
 ![Leaderboard](screenshots/leaderboard.png)
 
 ### Upload CSV
-![Upload CSV](screenshots/uploading csv.png)
+![Upload CSV](screenshots/uploading.png)
 ---
 
 ## 🎯 Internship Project
